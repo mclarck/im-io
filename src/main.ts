@@ -8,7 +8,10 @@ const app = express();
 const http = require("http");
 const server = http.Server(app);
 
-const io = require("socket.io")(server, { cors: { origin: '*' }, transports: ['polling'] });
+const io = require("socket.io")(server, {
+  cors: { origin: "*" },
+  transports: ["polling"],
+});
 
 app.get("/chat", (req, res) => {
   res.sendFile(path.resolve("./public/chat.html"));
@@ -21,7 +24,7 @@ const chat = io.of("/chat");
 const chat_users: Array<any> = new Array();
 
 chat.on("connect", (socket: any) => {
-  const chatMan = new Chat(chat, chat_users, socket);
+  const chatMan = new Chat(chat, chat_users, socket); 
   chatMan.exec();
 });
 

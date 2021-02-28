@@ -14,24 +14,31 @@ class Chat {
         this.users = users;
     }
     setUser(data) {
-        const buf = this.users;
-        buf[data === null || data === void 0 ? void 0 : data.sid] = data;
-        this.users = buf;
-        return buf;
+        this.users.push(data);
+        // console.log(data, "new user added");
     }
     getCurrentUser() {
         var _a;
+        let user;
         const sid = (_a = this.socket) === null || _a === void 0 ? void 0 : _a.id;
-        const buf = this.users;
-        return buf[sid];
+        this.users.map((o) => {
+            if (o.sid === sid)
+                user = o;
+        });
+        return user;
     }
     removeCurrentUser() {
         var _a;
         const sid = (_a = this.socket) === null || _a === void 0 ? void 0 : _a.id;
-        const buf = this.users;
-        if (buf[sid])
-            delete buf[sid];
-        return buf;
+        let curr;
+        const buf = this.users.filter((o) => {
+            if (o.sid === sid) {
+                curr = o;
+                return false;
+            }
+        });
+        console.log(buf, "user removed");
+        this.users = buf;
     }
     onNewMessage(payload) {
         if (typeof payload == "object") {
@@ -41,7 +48,7 @@ class Chat {
                 this.scope.to(dest === null || dest === void 0 ? void 0 : dest.iri).emit(this.MESSAGE, payload);
                 this.socket.emit(this.MESSAGE, payload);
             }
-            this.scope.emit(this.ONLINES, Object.values(this.users));
+            this.scope.emit(this.ONLINES, this.users);
         }
     }
     onJoinRoom(payload) {
@@ -51,21 +58,25 @@ class Chat {
             this.setUser(data);
             this.socket.join(data === null || data === void 0 ? void 0 : data.iri);
             this.scope.emit(this.JOINED_ROOM, data);
-            this.scope.emit(this.ONLINES, Object.values(this.users));
+            this.scope.emit(this.ONLINES, this.users);
         }
     }
     onLeaveRoom(payload) {
-        if (typeof payload == "object") {
-            this.users = this.removeCurrentUser();
-            this.scope.emit(this.LEFT_ROOM, payload);
-            this.scope.emit(this.ONLINES, Object.values(this.users));
-        }
+        this.socket.leave(payload === null || payload === void 0 ? void 0 : payload.room);
+        this.scope.emit(this.LEFT_ROOM, payload);
+        this.scope.emit(this.ONLINES, this.users);
+    }
+    onDisconnect() {
+        this.removeCurrentUser();
+        console.log(this.socket.id, "socket disconnected");
+        console.log(this.users, "socket disconnected");
+        this.scope.emit("onlines", this.users);
     }
     exec() {
         this.socket.on(this.NEW_MESSAGE, (payload) => this.onNewMessage(payload));
         this.socket.on(this.JOIN_ROOM, (payload) => this.onJoinRoom(payload));
         this.socket.on(this.LEAVE_ROOM, (payload) => this.onLeaveRoom(payload));
-        this.socket.on("disconnect", (payload) => this.onLeaveRoom(payload));
+        this.socket.on("disconnect", () => this.onDisconnect());
     }
 }
 exports.default = Chat;

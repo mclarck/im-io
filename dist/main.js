@@ -9,7 +9,10 @@ const order_1 = require("./order");
 const app = express();
 const http = require("http");
 const server = http.Server(app);
-const io = require("socket.io")(server, { cors: { origin: '*' }, transports: ['polling'] });
+const io = require("socket.io")(server, {
+    cors: { origin: "*" },
+    transports: ["polling"],
+});
 app.get("/chat", (req, res) => {
     res.sendFile(path.resolve("./public/chat.html"));
 });
