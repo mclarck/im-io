@@ -55,7 +55,7 @@ export default class Chat {
           iri: payload?.iri,
           _id: payload?._id,
           email: payload?.email,
-          username: payload?.username,
+          username: payload?.name ?? payload?.username,
           phone: payload?.phone,
           status: payload?.status,
         },

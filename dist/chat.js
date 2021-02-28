@@ -52,6 +52,7 @@ class Chat {
         });
     }
     onJoinRoom(payload) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof payload == "object") {
                 const data = [
@@ -60,7 +61,7 @@ class Chat {
                         iri: payload === null || payload === void 0 ? void 0 : payload.iri,
                         _id: payload === null || payload === void 0 ? void 0 : payload._id,
                         email: payload === null || payload === void 0 ? void 0 : payload.email,
-                        username: payload === null || payload === void 0 ? void 0 : payload.username,
+                        username: (_a = payload === null || payload === void 0 ? void 0 : payload.name) !== null && _a !== void 0 ? _a : payload === null || payload === void 0 ? void 0 : payload.username,
                         phone: payload === null || payload === void 0 ? void 0 : payload.phone,
                         status: payload === null || payload === void 0 ? void 0 : payload.status,
                     },
