@@ -22,7 +22,7 @@ app.get("/order", (req, res) => {
 const chat = io.of("/chat");
 const chat_users = new Array();
 chat.on("connect", (socket) => {
-    const chatMan = new chat_1.default(chat, chat_users, socket);
+    const chatMan = new chat_1.default(chat, socket);
     chatMan.exec();
 });
 const order = io.of("/order");

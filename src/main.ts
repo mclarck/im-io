@@ -24,7 +24,7 @@ const chat = io.of("/chat");
 const chat_users: Array<any> = new Array();
 
 chat.on("connect", (socket: any) => {
-  const chatMan = new Chat(chat, chat_users, socket); 
+  const chatMan = new Chat(chat, socket);
   chatMan.exec();
 });
 

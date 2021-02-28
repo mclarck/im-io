@@ -17,7 +17,7 @@
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script>
         $(function () {
-            var socket = io("https://io.inmarketify.ml/chat");
+            var socket = io("http://io.inmarketify.lo:8080/chat");
             
             $("form").submit(function (e) {
                 e.preventDefault(); // prevents page reloading

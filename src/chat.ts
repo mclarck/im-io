@@ -1,9 +1,10 @@
-import * as SocketIO from "socket.io"; 
+import * as SocketIO from "socket.io";
+import User from "./user";
 
 export default class Chat {
   socket: SocketIO.Socket;
   scope: SocketIO.Namespace;
-  users: Array<any>;
+  users: User;
 
   NEW_MESSAGE = "message";
   MESSAGE = "message";
@@ -13,44 +14,13 @@ export default class Chat {
   LEFT_ROOM = "left";
   ONLINES = "onlines";
 
-  constructor(
-    scope: SocketIO.Namespace,
-    users: Array<any>,
-    socket: SocketIO.Socket
-  ) {
+  constructor(scope: SocketIO.Namespace, socket: SocketIO.Socket) {
     this.socket = socket;
     this.scope = scope;
-    this.users = users;
+    this.users = new User();
   }
 
-  setUser(data: any) {
-    this.users.push(data);
-    // console.log(data, "new user added");
-  }
-
-  getCurrentUser() {
-    let user: any;
-    const sid: any = this.socket?.id;
-    this.users.map((o) => {
-      if (o.sid === sid) user = o;
-    });
-    return user;
-  }
-
-  removeCurrentUser() {
-    const sid: any = this.socket?.id;
-    let curr: any;
-    const buf = this.users.filter((o) => {
-      if (o.sid === sid) {
-        curr = o;
-        return false;
-      }
-    });
-    console.log(buf, "user removed");
-    this.users = buf;
-  }
-
-  onNewMessage(payload: any) {
+  async onNewMessage(payload: any) {
     if (typeof payload == "object") {
       const dest = payload?.dest;
       console.log(dest, "new message");
@@ -58,36 +28,41 @@ export default class Chat {
         this.scope.to(dest?.iri).emit(this.MESSAGE, payload);
         this.socket.emit(this.MESSAGE, payload);
       }
-      this.scope.emit(this.ONLINES, this.users);
+      this.scope.emit(this.ONLINES, this.users.findAll());
     }
   }
 
-  onJoinRoom(payload: any) {
+  async onJoinRoom(payload: any) {
     if (typeof payload == "object") {
-      const data: any = {
-        ...payload,
-        sid: this.socket?.id,
-        iri: payload?.iri,
-        rooms: this.socket.rooms,
-      };
-      this.setUser(data);
+      const data: any = [
+        {
+          sid: this.socket.id,
+          iri: payload?.iri,
+          _id: payload?._id,
+          email: payload?.email,
+          username: payload?.username,
+          phone: payload?.phone,
+          status: payload?.status,
+        },
+      ];
+      this.users.persist(data);
       this.socket.join(data?.iri);
       this.scope.emit(this.JOINED_ROOM, data);
-      this.scope.emit(this.ONLINES, this.users);
+      this.scope.emit(this.ONLINES, this.users.findAll());
     }
   }
 
-  onLeaveRoom(payload?: any) {
+  async onLeaveRoom(payload?: any) {
     this.socket.leave(payload?.room);
     this.scope.emit(this.LEFT_ROOM, payload);
-    this.scope.emit(this.ONLINES, this.users);
+    this.scope.emit(this.ONLINES, this.users.findAll());
   }
 
-  onDisconnect() {
-    this.removeCurrentUser();
+  async onDisconnect() {
+    this.users.removeBySid(this.socket.id);
     console.log(this.socket.id, "socket disconnected");
-    console.log(this.users, "socket disconnected");
-    this.scope.emit("onlines", this.users);
+    console.log(await this.users.findAll(), "socket disconnected");
+    this.scope.emit("onlines", this.users.findAll());
   }
 
   exec() {
