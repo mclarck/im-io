@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+  io:
+    container_name: io
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/usr/src
+    ports:
+      - "8080:8080"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+volumes:
+  io: 

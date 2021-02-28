@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Socket.IO</title>
+</head>
+
+<body>
+    <ul id="messages"></ul>
+    <form action="">
+        <input id="r" autocomplete="off" placeholder="event" />
+        <input id="m" autocomplete="off" placeholder="payload" /><button>
+            Send
+        </button>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+        $(function () {
+            var socket = io("http://localhost:8080/order");
+            
+            $("form").submit(function (e) {
+                e.preventDefault(); // prevents page reloading
+                if ($("#m").val()) {
+                    var data = $("#m").val()
+                    try { data = JSON.parse(data) } catch (error) { }
+                    socket.emit($("#r").val(), data);
+                }
+                return false;
+            });
+
+            function handleEvent(event, data) {
+                $("#messages").append($("<li>").text(`${event}: ${data}`));
+            }
+
+            socket.on("order", function (data) {
+                handleEvent("order", JSON.stringify(data))
+            });
+
+            socket.on("status", function (data) {
+                handleEvent("status", JSON.stringify(data))
+            });
+ 
+        });
+    </script>
+</body>
+
+</html>
