@@ -36,9 +36,10 @@ class Chat {
     onNewMessage(payload) {
         if (typeof payload == "object") {
             const dest = payload === null || payload === void 0 ? void 0 : payload.dest;
-            console.log(dest);
+            console.log(dest, "new message");
             if (dest) {
                 this.scope.to(dest === null || dest === void 0 ? void 0 : dest.iri).emit(this.MESSAGE, payload);
+                this.socket.emit(this.MESSAGE, payload);
             }
             this.scope.emit(this.ONLINES, Object.values(this.users));
         }
