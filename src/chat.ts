@@ -18,6 +18,21 @@ export default class Chat {
     this.socket = socket;
     this.scope = scope;
     this.users = new User();
+    this.onConnect()
+      .then(() => {
+        console.log("new client connected");
+      })
+      .catch((e) => {
+        this.onError(e);
+      });
+  }
+
+  onError(error: any) {
+    console.log(error.message);
+  }
+
+  async onConnect() {
+    this.scope.emit(this.ONLINES, await this.users.findAll());
   }
 
   async onNewMessage(payload: any) {
@@ -28,7 +43,7 @@ export default class Chat {
         this.scope.to(dest?.iri).emit(this.MESSAGE, payload);
         this.socket.emit(this.MESSAGE, payload);
       }
-      this.scope.emit(this.ONLINES, this.users.findAll());
+      this.scope.emit(this.ONLINES, await this.users.findAll());
     }
   }
 
@@ -45,24 +60,24 @@ export default class Chat {
           status: payload?.status,
         },
       ];
-      this.users.persist(data);
+      await this.users.persist(data);
       this.socket.join(data?.iri);
       this.scope.emit(this.JOINED_ROOM, data);
-      this.scope.emit(this.ONLINES, this.users.findAll());
+      this.scope.emit(this.ONLINES, await this.users.findAll());
     }
   }
 
   async onLeaveRoom(payload?: any) {
     this.socket.leave(payload?.room);
     this.scope.emit(this.LEFT_ROOM, payload);
-    this.scope.emit(this.ONLINES, this.users.findAll());
+    this.scope.emit(this.ONLINES, await this.users.findAll());
   }
 
   async onDisconnect() {
-    this.users.removeBySid(this.socket.id);
+    await this.users.removeBySid(this.socket.id);
     console.log(this.socket.id, "socket disconnected");
     console.log(await this.users.findAll(), "socket disconnected");
-    this.scope.emit("onlines", this.users.findAll());
+    this.scope.emit("onlines", await this.users.findAll());
   }
 
   exec() {

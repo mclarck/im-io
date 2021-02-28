@@ -22,6 +22,21 @@ class Chat {
         this.socket = socket;
         this.scope = scope;
         this.users = new user_1.default();
+        this.onConnect()
+            .then(() => {
+            console.log("new client connected");
+        })
+            .catch((e) => {
+            this.onError(e);
+        });
+    }
+    onError(error) {
+        console.log(error.message);
+    }
+    onConnect() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.scope.emit(this.ONLINES, yield this.users.findAll());
+        });
     }
     onNewMessage(payload) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -32,7 +47,7 @@ class Chat {
                     this.scope.to(dest === null || dest === void 0 ? void 0 : dest.iri).emit(this.MESSAGE, payload);
                     this.socket.emit(this.MESSAGE, payload);
                 }
-                this.scope.emit(this.ONLINES, this.users.findAll());
+                this.scope.emit(this.ONLINES, yield this.users.findAll());
             }
         });
     }
@@ -50,10 +65,10 @@ class Chat {
                         status: payload === null || payload === void 0 ? void 0 : payload.status,
                     },
                 ];
-                this.users.persist(data);
+                yield this.users.persist(data);
                 this.socket.join(data === null || data === void 0 ? void 0 : data.iri);
                 this.scope.emit(this.JOINED_ROOM, data);
-                this.scope.emit(this.ONLINES, this.users.findAll());
+                this.scope.emit(this.ONLINES, yield this.users.findAll());
             }
         });
     }
@@ -61,15 +76,15 @@ class Chat {
         return __awaiter(this, void 0, void 0, function* () {
             this.socket.leave(payload === null || payload === void 0 ? void 0 : payload.room);
             this.scope.emit(this.LEFT_ROOM, payload);
-            this.scope.emit(this.ONLINES, this.users.findAll());
+            this.scope.emit(this.ONLINES, yield this.users.findAll());
         });
     }
     onDisconnect() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.users.removeBySid(this.socket.id);
+            yield this.users.removeBySid(this.socket.id);
             console.log(this.socket.id, "socket disconnected");
             console.log(yield this.users.findAll(), "socket disconnected");
-            this.scope.emit("onlines", this.users.findAll());
+            this.scope.emit("onlines", yield this.users.findAll());
         });
     }
     exec() {

@@ -20,7 +20,6 @@ app.get("/order", (req, res) => {
     res.sendFile(path.resolve("./public/order.html"));
 });
 const chat = io.of("/chat");
-const chat_users = new Array();
 chat.on("connect", (socket) => {
     const chatMan = new chat_1.default(chat, socket);
     chatMan.exec();

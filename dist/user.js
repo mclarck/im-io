@@ -77,6 +77,7 @@ class User {
     removeBySid(sid) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log("removing old socket connection", "removeBySid");
                 return yield this.knex("users").where("sid", sid).del();
             }
             catch (error) {

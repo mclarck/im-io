@@ -55,6 +55,7 @@ export default class User {
   }
   async removeBySid(sid: any) {
     try {
+      console.log("removing old socket connection", "removeBySid");
       return await this.knex("users").where("sid", sid).del();
     } catch (error) {
       this.onError(error);
